@@ -42,7 +42,7 @@ rabin2 -z split32
 ```
 ![](./5.png)
 
-As can be seen, the string called `usefulString` is located at address `0x0804a030`, and its content is `/bin/cat flag.txt`.
+As can be seen, the string called `usefulString` is located at address `0x0804a030`, and its content is `"/bin/cat flag.txt"`.
 
 If we can send this string to the `system()` function, we win. Keeping that in mind, let's check the `usefulFunction`.
 
@@ -60,4 +60,17 @@ afl
 pdf @ sym.usefulFunction
 ```
 ![](./7.png)
+
+It can be seen that the function as a whole won't help us, but it contains a call to the `system()` function, which we do want. Additionally, the helper function pushes the address of the string `"/bin/ls"` onto the stack. We will aim to create a similar state on the stack, where the address of the `usefulString` is at the top of the stack when the call to `system()` is made.
+
+## Solution
+Let's summarize in a tables the details we discovered from the research that are important for the ROP Chain.
+
+| Code                | Address    |
+|---------------------|------------|
+| call system()       | 0x0804861a |
+
+| String              | Address    |
+|---------------------|------------|
+| "/bin/cat flag.txt" | 0x0804a030 |
 
