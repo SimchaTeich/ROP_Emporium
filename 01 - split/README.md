@@ -44,3 +44,20 @@ rabin2 -z split32
 
 As can be seen, the string called `usefulString` is located at address `0x0804a030`, and its content is `/bin/cat flag.txt`.
 
+If we can send this string to the `system()` function, we win. Keeping that in mind, let's check the `usefulFunction`.
+
+```
+r2 split32
+```
+```
+aa
+```
+```
+afl
+```
+![](./6.png)
+```
+pdf @ sym.usefulFunction
+```
+![](./7.png)
+
