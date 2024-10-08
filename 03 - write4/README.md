@@ -119,3 +119,12 @@ In the following table, the important addresses for constructing the ROP chain a
 
 And the table describes the ROP chain itself:
 
+| No | Chain Link                             |
+|----|----------------------------------------|
+| 1  | 44 garbage bytes                       |
+| 2  | pop2registers, memory4string, "flag"   |
+| 3  | mov2memory                             |
+| 4  | pop2registers, memory4string+4, ".txt" |
+| 5  | mov2memory                             |
+| 6  | print_file, "XXXX", memory4string      |
+
