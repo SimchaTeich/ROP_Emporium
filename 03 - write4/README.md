@@ -83,3 +83,28 @@ We'll start by searching for a writable memory location.
 ```
 readelf -S write432
 ```
+![](./9.png)
+
+So, the `.data` section looks like a good candidate. It's writable, and its size is 8 bytes, which is just enough for our needs.
+
+After some research and searching, I've also found two gadgets that are perfectly suited for our purpose.
+
+```
+python3 ~/ropper/Ropper.py
+```
+```
+file write432
+```
+```
+search pop
+```
+```
+search /1/ mov [%], %
+```
+![](./10.png)
+
+The combination of these two gadgets is simply perfect. The `edi` register will be used for the writable memory address, as derived from the `mov-gadget`. So, the `ebp` register will hold parts of the string "flag.txt". According to the `pop-gadget`, we learn that in the ROP chain, we will first write the address, followed by the relevant part of the string.
+
+Now we have all the information we need.
+
+## Solution
