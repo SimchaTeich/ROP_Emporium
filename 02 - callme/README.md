@@ -193,7 +193,7 @@ In the following table, the important addresses for constructing the ROP chain a
 |--------------|--------|------------|-----------------------------------------------------|
 | callme_one   | Func   | 0x080484f0 | The entry address in the PLT table.                 |
 | callme_two   | Func   | 0x08048550 | The entry address in the PLT table.                 |
-| callme_three | Func   | 0x0804a014 | The entry address in the PLT table.                 |
+| callme_three | Func   | 0x080484e0 | The entry address in the PLT table.                 |
 | pop3words    | Gadget | 0x080487f9 | Clean 3 words (12 bytes) from the top of the stack. |
 
 This table describes the ROP chain itself:
