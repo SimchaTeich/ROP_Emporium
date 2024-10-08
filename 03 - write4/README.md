@@ -110,9 +110,12 @@ Now we have all the information we need.
 ## Solution
 In the following table, the important addresses for constructing the ROP chain are summarized, along with a brief description of each.
 
-| Name          | Type   | Address    | Description                         |
-|---------------|--------|------------|-------------------------------------|
-| print_file    | Func   | 0x080483d0 | The entry address in the PLT table. |
-| pop2registers | Gadget | 0x080485aa | pop edi; pop ebp; ret;              |
-| mov3memory    | Gadget | 0x08048543 | mov dword ptr [edi], ebp; ret;      |
+| Name          | Type            | Address    | Description                                                       |
+|---------------|-----------------|------------|-------------------------------------------------------------------|
+| print_file    | Func            | 0x080483d0 | The entry address in the PLT table.                               |
+| memory4string | Writable Memory | 0x0804a018 | .data segment addr will be where the string "flag.txt" is placed. |
+| pop2registers | Gadget          | 0x080485aa | pop edi; pop ebp; ret;                                            |
+| mov2memory    | Gadget          | 0x08048543 | mov dword ptr [edi], ebp; ret;                                    |
+
+And the table describes the ROP chain itself:
 
