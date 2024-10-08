@@ -187,3 +187,11 @@ perl -e 'print "X"x44 . "\xf0\x84\x04\x08" . "\xf9\x87\x04\x08" . "\xef\xbe\xad\
 We succeeded. Now we have everything we need for the complete solution (which is, of course, just to add the third function).
 
 ## Solution
+In the following table, the important addresses for constructing the ROP chain are summarized, along with a brief description of each.
+
+| Name         | Type   | Address    | Description                                         |
+|--------------|--------|------------|-----------------------------------------------------|
+| callme_one   | Func   | 0x080484f0 | The entry address in the PLT table.                 |
+| callme_two   | Func   | 0x08048550 | The entry address in the PLT table.                 |
+| callme_three | Func   | 0x0804a014 | The entry address in the PLT table.                 |
+| pop3words    | Gadget | 0x080487f9 | Clean 3 words (12 bytes) from the top of the stack. |
