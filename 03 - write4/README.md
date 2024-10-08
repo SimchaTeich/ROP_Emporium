@@ -32,4 +32,24 @@ rabin2 -qs write432 | grep -ve 'imp' -e ' 0 ' -e '_'
 ```
 ![](./4.png)
 
+Our goal is to make the call `print_file("flag.txt")`. Is the string "flag.txt" present in the binary? The instructions state that it is not. Let's verify this.
 
+```
+rabin2 -z write432
+```
+![](./5.png)
+
+Indeed, there are no helpful strings. Let's take a look at the `usefulFunction`.
+
+```
+gdb write432
+```
+```
+set disassembly-flavor intel
+```
+```
+disas usefulFunction
+```
+![](./6.png)
+
+To summarize, the `usefulFunction` calls `print_file` with one parameter on the stack. This parameter is the address of the string `"nonexistent"` from the previous image (you can also print it out to confirm). Therefore, `usefulFunction` executes `print_file("nonexistent")`.
