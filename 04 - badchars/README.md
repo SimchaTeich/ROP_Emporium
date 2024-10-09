@@ -19,21 +19,21 @@ In the following table, the important addresses for constructing the ROP chain a
 
 And the next table describes the ROP chain itself:
 
-| No | Chain Link                                                |
-|----|-----------------------------------------------------------|
-| 1  | 44 garbage bytes                                          |
-| 2  | pop_bx, 0x01010101                                        |
-| 3  | pop_si_di_bp, "fl\x60f", memory4string, memory4string+2   |
-| 4  | mov2memory                                                |
-| 5  | xor2memory                                                |
-| 6  | pop_bp, memory4string+3                                   |
-| 7  | xor2memory                                                |
-| 8  | pop_si_di_bp, "\x2ftyt", memory4string+4, memory4string+4 |
-| 9  | mov2memory                                                |
-| 10 | xor2memory                                                |
-| 11 | pop_bp, memory4string+6                                   |
-| 12 | xor2memory                                                |
-| 13 | print_file, "XXXX", memory4string                         |
+| No | Chain Link                                                | Note                                                                                        |
+|----|-----------------------------------------------------------|---------------------------------------------------------------------------------------------|
+| 1  | 44 garbage bytes                                          |                                                                                             |
+| 2  | pop_bx, 0x01010101                                        | The lower byte will be used later for XOR operations.                                       |
+| 3  | pop_si_di_bp, "fl\x60f", memory4string, memory4string+2   | Each update of the EBP register sets it to the address of the next byte that will be XORed. |
+| 4  | mov2memory                                                | After this operation, the string will be `"fl\x60f"`.                                       |
+| 5  | xor2memory                                                | After this operation, the string will be `"flaf"`.                                          |
+| 6  | pop_bp, memory4string+3                                   |                                                                                             |
+| 7  | xor2memory                                                | After this operation, the string will be `"flag"`.                                          |
+| 8  | pop_si_di_bp, "\x2ftyt", memory4string+4, memory4string+4 |                                                                                             |
+| 9  | mov2memory                                                | After this operation, the string will be `"flag\x2ftyt"`.                                   |
+| 10 | xor2memory                                                | After this operation, the string will be `"flag.tyt"`.                                      |
+| 11 | pop_bp, memory4string+6                                   |                                                                                             |
+| 12 | xor2memory                                                | After this operation, the string will be `"flag.txt"`.                                      |
+| 13 | print_file, "XXXX", memory4string                         |                                                                                             |
 
 Where `"XXXX"` is the return address from the `print_file` function, which is not needed at all (it's there just to ensure that the parameter `memory4string` is in the right place on the stack).
 
