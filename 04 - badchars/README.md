@@ -37,6 +37,32 @@ readelf -S badchars32 | grep -e '[.]data'
 ```
 ![](./3.png)
 
+The more artistic part of this challenge was finding the suitable gadgets and thinking of an idea based on the conditions. Still, there are some general guidelines we already know: we need gadgets that will `pop` values into registers and gadgets that will `mov` values from registers to memory. There also needs to be a correspondence between the registers, especially for the one used to hold the address in the `mov-gadget`. Additionally, we were given a hint to consider using the `XOR` operation. After some research and thought, I found the following gadgets in the picture. Right after this, I will present the idea for how to use them.
+
+Note: Before searching for the gadgets, you need to update Ropper with the forbidden bytes. This is done in Ropper using the command `badbytes`.
+
+```
+python3 ~/ropper/Ropper.py
+```
+```
+file badchars32
+```
+```
+badbytes 7867612e
+```
+```
+search pop
+```
+```
+search /1/ mov [%], %
+```
+```
+search /1/ xor
+```
+![](./4.png)
+
+
+
 
 
 ## Solution
