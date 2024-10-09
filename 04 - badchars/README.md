@@ -2,8 +2,28 @@
 The challenge is available [here](https://ropemporium.com/challenge/badchars.html).
 
 ## Black-Box Test
+The current challenge is actually identical to the previous one, except for the fact that there are some characters we cannot use in the ROP chain. The instructions tell us that the program reveals what those characters are, so let's get started.
+
+```
+./badchars32
+```
+![](./0.png)
+
+So, we are prohibited from using the characters x, g, a, and ".". Let's try to see what happens to them when they enter the stack by using all four as a return address (which will obviously crash the program, and when we check where it failed, we will expect to see these characters)
+
+```
+perl -e 'print "X"x44 . "xga."' | ./badchars32
+```
+```
+sudo dmesg -k | tail -2
+```
+![](./1.png)
+
+This means that each of the forbidden characters gets converted to `\xeb` before being written to the stack, and we will need to bypass this.
 
 ## In-depth research
+
+
 
 ## Solution
 In the following table, the important addresses for constructing the ROP chain are summarized, along with a brief description of each.
