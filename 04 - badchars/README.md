@@ -3,6 +3,7 @@ The challenge is available [here](https://ropemporium.com/challenge/badchars.htm
 
 ## Black-Box Test
 
+## In-depth research
 
 ## Solution
 In the following table, the important addresses for constructing the ROP chain are summarized, along with a brief description of each.
@@ -82,4 +83,10 @@ ROP_Chain += print_file + b"XXXX" + little_endian(memory4string)
 # Saving the chain in a binary file
 with open("rop_chain", "wb") as f:
     f.write(ROP_Chain)
+```
+```
+python3 chain_builder.py
+```
+```
+cat rop_chain | ./badchars32
 ```
