@@ -9,7 +9,7 @@ The current challenge is actually identical to the previous one, except for the 
 ```
 ![](./0.png)
 
-So, we are prohibited from using the characters x, g, a, and ".". Let's try to see what happens to them when they enter the stack by using all four as a return address (which will obviously crash the program, and when we check where it failed, we will expect to see these characters)
+So, we are prohibited from using the characters `"x"`, `"g"`, `"a"`, and `"."`. Let's try to see what happens to them when they enter the stack by using all four as a return address (which will obviously crash the program, and when we check where it failed, we will expect to see these characters)
 
 ```
 perl -e 'print "X"x44 . "xga."' | ./badchars32
@@ -22,6 +22,20 @@ sudo dmesg -k | tail -2
 This means that each of the forbidden characters gets converted to `\xeb` before being written to the stack, and we will need to bypass this.
 
 ## In-depth research
+This challenge is indeed almost identical to the previous one, so there's no need for an extensive presentation here. I will show how to find the components we need for the ROP chain and the idea I'm going to use.
+
+Let's start by finding where `print_file` is located:
+```
+rabin2 -i badchars32
+```
+![](./2.png)
+
+Again, we will use the `.data` section to store the string "flag.txt."
+
+```
+readelf -S badchars32 | grep -e '[.]data'
+```
+![](./3.png)
 
 
 
