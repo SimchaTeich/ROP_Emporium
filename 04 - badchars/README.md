@@ -167,3 +167,6 @@ python3 chain_builder.py
 ```
 cat rop_chain | ./badchars32
 ```
+![](./5.png)
+
+Heyda!!!
