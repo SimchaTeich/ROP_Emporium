@@ -61,7 +61,7 @@ search /1/ xor
 ```
 ![](./4.png)
 
-The general idea is that the string `"flag.txt"` will be entered in parts (like previous challenge). The difference this time is that the characters `"a"`, `"g"`, and `"."` will not be entered directly; instead, they will be entered as different characters, such that when we apply `XOR` with the value `0x01` (just for convenience), we will get the corresponding letter. For example, if we input `"AAA\x60"` and then apply `\x01 ^ \x60`, we get `\x61 (='a')` (So `"AAA\x60"` -> `"AAAa"`). After we handle all the necessary indexes in the current part of the string, we will input the next part in the same way.
+The general idea is that the string `"flag.txt"` will be entered in parts (like previous challenge). The difference this time is that the characters `"a"`, `"g"`, `"."` and `"x"` will not be entered directly; instead, they will be entered as different characters, such that when we apply `XOR` with the value `0x01` (just for convenience), we will get the corresponding letter. For example, if we input `"AAA\x60"` and then apply `\x01 ^ \x60`, we get `\x61 (='a')` (So `"AAA\x60"` -> `"AAAa"`). After we handle all the necessary indexes in the current part of the string, we will input the next part in the same way.
 
 From the gadgets we've collected, the usage of the registers is as follows:
 
