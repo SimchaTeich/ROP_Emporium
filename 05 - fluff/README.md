@@ -15,7 +15,7 @@ In the following table, the important addresses for constructing the ROP chain a
 | pop_bswap_cx        | Gadget          | 0x08048558 | pop ecx;<br />bswap ecx;<br />ret;                                                         |
 | pop_bp        | Gadget          | 0x080485bb | pop ebp;<br />ret;                                                                    |
 | prepare_dx       | Gadget          | 0x08048543 | mov eax, ebx;<br />mov ebx, 0xb0bababa;<br />pext edx, ebx, eax;<br />mov eax, 0xdeadbeef; ret; |
-| exchange_byte | Gadget          | 0x08048555 | xchg BYTE PTR [exc], dl;<br />ret;                                                    |
+| exchange_byte | Gadget          | 0x08048555 | xchg BYTE PTR [ecx], dl;<br />ret;                                                    |
 
 And the next table describes the ROP chain itself:
 
