@@ -1,4 +1,4 @@
-# split
+# split32
 The challenge is available [here](https://ropemporium.com/challenge/split.html).
 
 ## Black-Box Test
