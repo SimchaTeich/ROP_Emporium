@@ -45,6 +45,20 @@ disas questionableGadgets
 
 In this binary, it seems that the [`xchg`](https://www.felixcloutier.com/x86/xchg) instruction is the easiest way to access memory, one byte at a time. When I explored with the tool `ropper` to look for more convenient accesses, like `mov` or perhaps `xor`, there was nothing. Therefore, we must take this gadget. From here, we also need to gather the gadget that does `pop ecx`. Apart from the gadget shown, no more convenient way was found to load `ecx`, so we need to consider the [`bswap`](https://www.felixcloutier.com/x86/bswap) operation and input the data into the register in big-endian format. Additionally, there is no convenient way to input data into `dl` (the lower part of `edx`), so we will use the gadget that performs [`pext`](https://www.felixcloutier.com/x86/pext).
 
+All that's left is to find some `pop ebp` so that we can use the gadget that handles `edx` afterward. Therefore, we'll exit `gdb` (with the command `q`) and enter `ropper`.
+
+```
+python3 ~/ropper/Ropper.py
+```
+```
+file fluff32
+```
+```
+search /1/ pop ebp
+```
+![](./5.png)
+
+
 
 ## Solution
 In the following table, the important addresses for constructing the ROP chain are summarized, along with a brief description of each.
