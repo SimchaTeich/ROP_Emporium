@@ -2,8 +2,49 @@
 The challenge is available [here](https://ropemporium.com/challenge/fluff.html).
 
 ## Black-Box Test
+We were told that the current challenge is very similar to the write4 challenge. Let's take a look at the program's behavior.
+
+![](./0.png)
+
+There's nothing special. The index for the return address is also the same, so I omitted that from the documentation.
 
 ## In-depth research
+The idea in this challenge is actually to "make do with what we have." We'll start, as usual, by gathering information and then go from there.
+
+```
+rabin2 -i ./fluff32
+```
+![](./1.png)
+
+We are already familiar with `print_file`. Are there any convenient strings?
+
+```
+rabin2 -z ./fluff32
+```
+![](./2.png)
+
+Of course not. What about helper functions?
+
+```
+gdb fluff32
+```
+```
+info func
+```
+![](./3.png)
+
+We already know `usefulFunction`. In contrast, `questionableGadgets` looks much more interesting (and it was also mentioned in the challenge's introduction instructions). Let's take a look to see what it has to offer.
+
+```
+set disassembly-flavor intel
+```
+```
+disas questionableGadgets
+```
+![](./4.png)
+
+
+
 
 ## Solution
 In the following table, the important addresses for constructing the ROP chain are summarized, along with a brief description of each.
