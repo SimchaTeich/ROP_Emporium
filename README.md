@@ -1,5 +1,5 @@
 # ROP Emporium
-Solutions to the CTF [ROP Emporium](https://ropemporium.com/) challenge
+CTF [ROP Emporium](https://ropemporium.com/) solutions.
 
 ### TODO
 7 - pivot
